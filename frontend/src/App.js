@@ -14,10 +14,7 @@ function App() {
   const [averagePrice, setAveragePrice] = useState(0);
 
   // Pridobi komponente ob zagonu
-  useEffect(() => {
-    fetchComponents();
-  }, []);
-
+  
   // Funkcija za pridobivanje komponent
   const fetchComponents = async () => {
     try {
