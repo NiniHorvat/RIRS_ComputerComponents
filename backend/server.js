@@ -18,6 +18,23 @@ mongoose.connect('mongodb+srv://ninahorvat8:vajePTS2024@cluster.c7ule.mongodb.ne
   .catch(err => console.error('Napaka pri povezavi z MongoDB:', err));
 
 
+  const deleteTestData = async () => {
+    try {
+      // Izbriši komponente z določenimi lastnostmi, ki so testni podatki
+      // Na primer, vse komponente, katerih ime uporabnika je "Maja" ali "Luka"
+      await Component.deleteMany({
+        userName: { $in: ['Maja', 'Luka'] },
+      });
+  
+      console.log('Testni podatki so bili uspešno odstranjeni.');
+    } catch (err) {
+      console.error('Napaka pri brisanju testnih podatkov:', err);
+    }
+  };
+  
+  // Brisanje testnih podatkov ob zagonu
+  deleteTestData();
+  
 
 // API pot za pridobivanje vseh komponent
 app.get('/components', async (req, res) => {
@@ -135,6 +152,8 @@ app.delete('/components/user/:userName', async (req, res) => {
     res.status(500).send({ error: 'Napaka pri brisanju podatkov.' });
   }
 });
+
+
 
 
 module.exports = app; 

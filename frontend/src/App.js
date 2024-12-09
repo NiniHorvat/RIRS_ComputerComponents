@@ -6,38 +6,36 @@ function App() {
   const [componentName, setComponentName] = useState('');
   const [price, setPrice] = useState('');
   const [components, setComponents] = useState([]);
+  const [filteredComponents, setFilteredComponents] = useState([]); // Dodano za filtriranje
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [showMessage, setShowMessage] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [currentComponent, setCurrentComponent] = useState({});
   const [averagePrice, setAveragePrice] = useState(0);
+  const [filter, setFilter] = useState(''); // Dodano za vnos filtriranja uporabnika
 
- 
- const fetchComponents = useCallback(async () => {
+  const fetchComponents = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:3000/components');
       const data = await response.json();
       setComponents(data);
+      setFilteredComponents(data); // Nastavi začetni seznam komponent na vse komponente
       calculateAveragePrice(data);
     } catch (err) {
       displayMessage('Napaka pri nalaganju komponent.', 'error');
     }
-  }, []); // Empty dependency array ensures fetchComponents is stable
+  }, []);
 
-  // Fetch components when the component mounts
   useEffect(() => {
     fetchComponents();
   }, [fetchComponents]);
 
-
-  // Izračun povprečne cene
   const calculateAveragePrice = (components) => {
     const total = components.reduce((sum, component) => sum + component.price, 0);
     setAveragePrice(components.length > 0 ? (total / components.length).toFixed(2) : 0);
   };
 
-  // Obdelava pošiljanja obrazca
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!userName || !componentName || !price) {
@@ -57,10 +55,9 @@ function App() {
       if (response.ok) {
         displayMessage('Komponenta uspešno dodana!', 'success');
         fetchComponents();
- setUserName('');
-      setComponentName('');
-      setPrice('');
-
+        setUserName('');
+        setComponentName('');
+        setPrice('');
       } else {
         displayMessage('Napaka pri dodajanju komponente.', 'error');
       }
@@ -69,7 +66,6 @@ function App() {
     }
   };
 
-  // Funkcija za prikaz sporočila
   const displayMessage = (msg, type) => {
     setMessage(msg);
     setMessageType(type);
@@ -77,14 +73,11 @@ function App() {
     setTimeout(() => setShowMessage(false), 3000);
   };
 
-  // Odpri modal za posodobitev
   const openUpdateModal = (component) => {
     setCurrentComponent(component);
     setShowUpdateModal(true);
   };
 
-
-  // Obdelava posodobitve komponente
   const handleUpdate = async () => {
     const updatedComponent = {
       componentName: currentComponent.componentName,
@@ -110,7 +103,6 @@ function App() {
     }
   };
 
-  // Funkcija za brisanje komponente
   const handleDelete = async (userName) => {
     try {
       const response = await fetch(`http://localhost:3000/components/user/${userName}`, {
@@ -128,6 +120,22 @@ function App() {
     }
   };
 
+  // Funkcija za filtriranje komponent glede na vnos v filtrirnem polju
+  const handleFilterChange = (e) => {
+    const filterValue = e.target.value;
+    setFilter(filterValue);
+
+    // Filtriraj komponente glede na ime uporabnika
+    if (filterValue === '') {
+      setFilteredComponents(components); // Če ni filtra, prikaži vse komponente
+    } else {
+      const filtered = components.filter((component) =>
+        component.userName.toLowerCase().includes(filterValue.toLowerCase())
+      );
+      setFilteredComponents(filtered);
+    }
+  };
+
   return (
     <div className="App">
       <h1>Računalniške komponente</h1>
@@ -138,27 +146,33 @@ function App() {
         <input type="text" placeholder="Ime uporabnika" value={userName} onChange={(e) => setUserName(e.target.value)} required />
         <input type="text" placeholder="Ime komponente" value={componentName} onChange={(e) => setComponentName(e.target.value)} required />
         <input type="number" placeholder="Cena" value={price} onChange={(e) => setPrice(e.target.value)} required />
-        <button type="submit" >Dodaj komponento</button>
+        <button type="submit">Dodaj komponento</button>
       </form>
 
+      <h2>Filtriraj po uporabniku</h2>
+      <input
+        type="text"
+        placeholder="Filtriraj po uporabniku"
+        value={filter}
+        onChange={handleFilterChange}
+      />
+
       <h2>Seznam komponent</h2>
-<ul>
-  {components.map((component) => (
-    <li key={component.userName} className="component-item">
-      <div className="component-details">
-        <p><strong>Uporabnik:</strong> {component.userName}</p>
-        <p><strong>Komponenta:</strong> {component.componentName}</p>
-        <p><strong>Cena:</strong> {component.price} EUR</p>
-      </div>
-      <div className="button-group">
-        <button onClick={() => handleDelete(component.userName)}>Odstrani</button>
-        <button className="update-btn" onClick={() => openUpdateModal(component)}>Posodobi</button>
-      </div>
-    </li>
-  ))}
-</ul>
-
-
+      <ul>
+        {filteredComponents.map((component) => (
+          <li key={component.userName} className="component-item">
+            <div className="component-details">
+              <p><strong>Uporabnik:</strong> {component.userName}</p>
+              <p><strong>Komponenta:</strong> {component.componentName}</p>
+              <p><strong>Cena:</strong> {component.price} EUR</p>
+            </div>
+            <div className="button-group">
+              <button onClick={() => handleDelete(component.userName)}>Odstrani</button>
+              <button className="update-btn" onClick={() => openUpdateModal(component)}>Posodobi</button>
+            </div>
+          </li>
+        ))}
+      </ul>
 
       <h3>Povprečna cena: {averagePrice} EUR</h3>
 
@@ -166,8 +180,16 @@ function App() {
       {showUpdateModal && (
         <div className="modal">
           <div className="modal-content">
-            <input type="text" value={currentComponent.componentName} onChange={(e) => setCurrentComponent({ ...currentComponent, componentName: e.target.value })} />
-            <input type="number" value={currentComponent.price} onChange={(e) => setCurrentComponent({ ...currentComponent, price: e.target.value })} />
+            <input
+              type="text"
+              value={currentComponent.componentName}
+              onChange={(e) => setCurrentComponent({ ...currentComponent, componentName: e.target.value })}
+            />
+            <input
+              type="number"
+              value={currentComponent.price}
+              onChange={(e) => setCurrentComponent({ ...currentComponent, price: e.target.value })}
+            />
             <button onClick={handleUpdate}>Shrani spremembe</button>
             <button onClick={() => setShowUpdateModal(false)}>Prekliči</button>
           </div>
