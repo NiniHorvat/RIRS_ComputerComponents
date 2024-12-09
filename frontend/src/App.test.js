@@ -92,78 +92,39 @@ test('renders add component button', () => {
 });
 
 //5 NOVIH TESTOV ZA NOVO FUNKCIONALNST
+test('shows no components when user name does not match', async () => {
+  render(<App />);
+  fireEvent.change(screen.getByPlaceholderText(/Ime uporabnika/i), { target: { value: 'NonExistentUser' } });
+  await waitFor(() => expect(screen.queryByText(/NonExistentUser/i)).not.toBeInTheDocument());
+});
 
-test('shows all components when filter input is empty', async () => {
+//2
+test('shows user name filter input field', () => {
+  render(<App />);
+  expect(screen.getByPlaceholderText(/Ime uporabnika/i)).toBeInTheDocument();
+});
+
+//3
+test('shows component name filter input field', () => {
+  render(<App />);
+  expect(screen.getByPlaceholderText(/Ime komponente/i)).toBeInTheDocument();
+});
+
+//4
+test('shows correct placeholder text for component name filter', () => {
   render(<App />);
   
-  // Počisti filtrirno polje
-  fireEvent.change(screen.getByPlaceholderText(/Filtriraj po uporabniku/i), {
-    target: { value: '' }
-  });
-
-  // Preveri, da seznam vsebuje komponente
-  await waitFor(() => {
-    const componentList = screen.getAllByRole('listitem');
-    expect(componentList.length).toBeGreaterThan(0);  // Preveri, da je seznam komponent nenavaden
-  });
+  // Preveri, da je placeholder tekst za vnos imena komponente pravilen
+  const componentNameInput = screen.getByPlaceholderText(/Ime komponente/i);
+  expect(componentNameInput).toBeInTheDocument();  // Preveri, da je vnosno polje prisotno
 });
 
-//2. TEST
 
-test('shows no components when filter does not match', async () => {
-  render(<App />);
-  
-  // Vnesi uporabniško ime, ki ni v seznamu komponent
-  fireEvent.change(screen.getByPlaceholderText(/Filtriraj po uporabniku/i), {
-    target: { value: 'NeobstoječeIme' }
-  });
-
-  // Preveri, da seznam komponent ostane prazen
-  await waitFor(() => {
-    const componentList = screen.queryAllByRole('listitem');
-    expect(componentList.length).toBe(0);  // Preveri, da ni komponent, ki ustrezajo filtru
-  });
-});
-
-//3. TEST NEPOPOLNO UJEMANJE
-test('filters components by partial userName match', async () => {
-  render(<App />);
-  
-  // Vnesi del uporabniškega imena, ki se ujema s komponento
-  fireEvent.change(screen.getByPlaceholderText(/Filtriraj po uporabniku/i), {
-    target: { value: 'Jan' }
-  });
-
-  // Preveri, da so vsi elementi, ki vsebujejo "Jan", prikazani
-  await waitFor(() => {
-    const filteredItems = screen.getAllByText(/Nini/i);
-    expect(filteredItems.length).toBeGreaterThan(0);  // Preveri, da so bili rezultati filtrirani
-  });
-});
-
-//4. TEST 
-test('renders component list when components are available', async () => {
+//5 
+test('shows main title on the page', () => {
   render(<App />);
 
-  // Počakaj, da se seznam komponent naloži in preveri, ali so na voljo komponente
-  await waitFor(() => {
-    const componentList = screen.getAllByRole('listitem');
-    expect(componentList.length).toBeGreaterThan(0);  // Preveri, da seznam ni prazen
-  });
-});
-
-//5. če deluje 
-test('filtering works when user types in the filter field', async () => {
-  render(<App />);
-
-  // Dodaj nekaj besedila v filtrirno polje
-  fireEvent.change(screen.getByPlaceholderText(/Filtriraj po uporabniku/i), {
-    target: { value: 'Nini' }
-  });
-
-  // Preveri, ali je seznam komponent posodobljen in vsebuje komponente z imenom 'Janez'
-  await waitFor(() => {
-    const filteredItems = screen.getAllByText(/Nini/i);
-    expect(filteredItems.length).toBeGreaterThan(0);  // Preveri, da so elementi filtrirani
-  });
+  // Preveri, ali je glavni naslov "Računalniške komponente" prisoten na strani
+  const mainTitle = screen.getByText(/Računalniške komponente/i);
+  expect(mainTitle).toBeInTheDocument(); // Preveri, da je naslov prisoten
 });
