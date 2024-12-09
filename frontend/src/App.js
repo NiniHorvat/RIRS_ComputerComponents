@@ -13,19 +13,23 @@ function App() {
   const [currentComponent, setCurrentComponent] = useState({});
   const [averagePrice, setAveragePrice] = useState(0);
 
-  // Pridobi komponente ob zagonu
-  
-  // Funkcija za pridobivanje komponent
-  const fetchComponents = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/components');
-      const data = await response.json();
-      setComponents(data);
-      calculateAveragePrice(data);
-    } catch (err) {
-      displayMessage('Napaka pri nalaganju komponent.', 'error');
-    }
-  };
+ 
+const fetchComponents = useCallback(async () => {
+  try {
+    const response = await fetch('http://localhost:3000/components');
+    const data = await response.json();
+    setComponents(data);
+    calculateAveragePrice(data);
+  } catch (err) {
+    displayMessage('Napaka pri nalaganju komponent.', 'error');
+  }
+}, []);
+
+useEffect(() => {
+  fetchComponents();
+}, [fetchComponents]);
+
+
 
   // Izračun povprečne cene
   const calculateAveragePrice = (components) => {
