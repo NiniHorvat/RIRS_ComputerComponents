@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "test:ci": "jest"
+    "test:ci": "jest --forceExit"
   },
   "keywords": [],
   "author": "",
