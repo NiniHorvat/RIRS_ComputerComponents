@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 // Definicija sheme za komponento
 const componentSchema = new mongoose.Schema({
+  
   userName: {
     type: String,
     required: true,

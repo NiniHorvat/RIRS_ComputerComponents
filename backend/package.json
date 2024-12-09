@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-   
-     "test": "mocha"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +11,7 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "mongoose": "^8.8.3"
   },

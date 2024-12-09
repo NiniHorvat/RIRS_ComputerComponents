@@ -1,0 +1,89 @@
+name: Backend CI
+
+# Trigger the workflow on push or pull request to the `main` branch
+on:
+  push:
+    branches:
+      - main
+      - feature
+  pull_request:
+    branches:
+      - main
+      - staging
+
+jobs:
+  # Job for building the backend
+  build-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code  # Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js  # Set up Node.js environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # Use Node.js version 16
+
+    - name: Cache node_modules  # Cache node_modules to speed up installs
+      uses: actions/cache@v3
+      with:
+        path: backend/node_modules
+        key: ${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-backend-
+
+    - name: Install dependencies  # Install project dependencies
+      run: |
+        cd backend
+        npm ci  # `npm ci` for consistent installs
+
+    - name: Upload backend artifacts  # Upload backend build artifacts (including node_modules)
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-build
+        path: backend/
+        # Upload the whole backend folder along with dependencies
+
+  # Job for testing the backend
+  test-backend:
+    needs: build-backend  # This job runs after the build job finishes
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code  # Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js  # Set up Node.js environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # Ensure the same version of Node.js
+
+    - name: Cache node_modules  # Cache node_modules to speed up installs
+      uses: actions/cache@v3
+      with:
+        path: backend/node_modules
+        key: ${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-backend-
+
+    - name: Install dependencies  # Install dependencies
+      run: |
+        cd backend
+        npm install  # Install any new dependencies if cache miss
+
+    - name: Set up MongoDB test environment  # Set up test MongoDB environment variables
+      run: |
+        echo "MONGO_URI_TEST=${{ secrets.MONGO_URI_TEST }}" >> $GITHUB_ENV
+        echo "PORT=5000" >> $GITHUB_ENV
+
+    - name: Run tests with coverage  # Run tests using Jest with the --runInBand option
+      run: |
+        cd backend
+        npm run test:ci -- --runInBand  # Run tests serially to avoid issues with parallel execution
+
+    - name: Upload coverage report  # Upload the test coverage report as an artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-coverage  # Coverage artifact name
+        path: backend/coverage/  # Path to the coverage report folder
