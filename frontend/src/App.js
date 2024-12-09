@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 function App() {
@@ -14,12 +14,7 @@ function App() {
   const [averagePrice, setAveragePrice] = useState(0);
 
  
-useEffect(() => {
-    fetchComponents();
-  }, []);
-
-  // Funkcija za pridobivanje komponent
-  const fetchComponents = async () => {
+ const fetchComponents = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:3000/components');
       const data = await response.json();
@@ -28,7 +23,12 @@ useEffect(() => {
     } catch (err) {
       displayMessage('Napaka pri nalaganju komponent.', 'error');
     }
-  };
+  }, []); // Empty dependency array ensures fetchComponents is stable
+
+  // Fetch components when the component mounts
+  useEffect(() => {
+    fetchComponents();
+  }, [fetchComponents]);
 
 
   // Izračun povprečne cene
