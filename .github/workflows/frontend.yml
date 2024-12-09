@@ -4,12 +4,10 @@ on:
   push:
     branches:
       
-main
-feature
+- main
 pull_request:
   branches:
-main
-staging
+- main
 
 jobs:
   # Build frontend
