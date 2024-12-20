@@ -105,7 +105,7 @@ test('shows user name filter input field', () => {
 });
 
 //3
-test('shows component name filter input field', () => {
+test('shows component name filter input field a', () => {
   render(<App />);
   expect(screen.getByPlaceholderText(/Ime komponente/i)).toBeInTheDocument();
 });
