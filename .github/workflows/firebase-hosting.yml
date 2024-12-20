@@ -1,0 +1,39 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main  # To bo sprožilo deployment, ko se spremembe združijo v 'main' vejo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Korak 1: Preveri kodo iz repozitorija
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Korak 2: Nastavi Node.js okolje (za aplikacije, kot je React, Angular, itd.)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # Nastavi ustrezno verzijo Node.js za svojo aplikacijo
+
+      # Korak 3: Namesti odvisnosti
+      - name: Install dependencies
+        run: npm install
+
+      # Korak 4: Gradnja aplikacije (če uporabljaš React, Vue.js ali podobno)
+      - name: Build the application
+        run: npm run build # Če uporabljaš React, Vue, Angular, ali kaj podobnega
+
+      # Korak 5: Prijava v Firebase z uporabo service account key
+      - name: Set up Firebase CLI
+        uses: wzieba/Firebase-Action@v2
+        with:
+          firebase_token: ${{ secrets.FIREBASE_TOKEN }} # Firebase token se shrani v GitHub Secrets
+
+      # Korak 6: Deploy aplikacije na Firebase Hosting
+      - name: Deploy to Firebase Hosting
+        run: firebase deploy --only hosting --project ${{ secrets.FIREBASE_PROJECT_ID }} # Uporabi projekt, ki je nastavljen
